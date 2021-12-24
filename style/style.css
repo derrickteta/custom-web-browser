@@ -1,0 +1,19 @@
+QAction {
+    background-color: rgb(7, 6, 6);
+}
+
+QToolBar{
+    background-color:black;
+}
+
+QLineEdit {
+    /* border-radius: 50%; */
+}
+
+QIcon , QAction {
+    background-color: white;
+}
+
+QMainWindow{
+    background-color: black;
+}

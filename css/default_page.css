@@ -1,0 +1,30 @@
+body {
+    background-image: url("../images/bg.jpg");
+    background-color: #cccccc;
+   }
+
+:root {
+--input-border: #8b8a8b;
+--input-focus-h: 245;
+--input-focus-s: 100%;
+--input-focus-l: 42%;
+}
+#search_input{
+    min-width: 400px;
+    height: 30px;
+    font-size: 16px;
+    font-size: max(16px, 1em);
+    font-family: inherit;
+    padding: 0.25em 0.5em;
+    background-color: #fff;
+    border-radius: 10px;
+    line-height: 1;
+}
+
+.centered {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    /* bring your own prefixes */
+    transform: translate(-50%, -50%);
+  }
