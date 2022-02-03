@@ -3,7 +3,7 @@ QAction {
 }
 
 QToolBar{
-    background-color:black;
+    background-color:grey;
 }
 
 QLineEdit {
@@ -15,5 +15,5 @@ QIcon , QAction {
 }
 
 QMainWindow{
-    background-color: black;
+    background-color: grey;
 }

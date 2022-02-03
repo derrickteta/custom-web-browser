@@ -6,8 +6,8 @@ from PyQt5.QtPrintSupport import *
 
 import os
 import sys
-from PyQt5 import QtCore, QtGui
-
+from PyQt5 import QtCore
+from fonctions.connexion import Ui_RegisterForm
 SavePageEvent = QWebEnginePage.SavePage
 OpenLinkInNewTabEvent = QWebEnginePage.OpenLinkInNewTab
 
@@ -15,29 +15,25 @@ from models import *
 from utils import *
 from style import loader
 
-
-class CustomWebEngineView(QWebEngineView):
-    def __init__(self, *args, **kwargs):
-        super(QWebEngineView, self).__init__(*args, **kwargs)
-        self.initialise_tab()
-
-    def initialise_tab(self):
-        settings = self.settings()
-
-        # did not seem to work
-        settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, True)
-
-        # added this because github was resquesting it
-        settings.setAttribute(QWebEngineSettings.WebGLEnabled, True)
-
-
+   
 class CustomWebEnginePage(QWebEnginePage):
     def __init__(self, *args, **kwargs):
         super(QWebEnginePage, self).__init__(*args, **kwargs)
+        self.initialise_tab
 
     # Store external windows.
     external_windows = []
     my_web_signal = pyqtSignal(object)
+    def initialise_tab(self):
+        settings = QWebEngineSettings.globalSettings
+
+        # did not seem to work
+        settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, True)
+        settings.setAttribute(QWebEngineSettings.OfflineWebApplicationCacheEnabled, True)
+        settings.enablePersistentStorage('cache.txt')
+
+        # added this because github was resquesting it
+        settings.setAttribute(QWebEngineSettings.WebGLEnabled, True) 
 
     def acceptNavigationRequest(self, url, _type, isMainFrame):
         # if _type == QWebEnginePage.NavigationTypeLinkClicked:
@@ -157,8 +153,15 @@ class MainWindow(QMainWindow):
 
         left_tb.setLayoutDirection(Qt.RightToLeft)
 
-        menu = left_tb.addMenu(QIcon(os.path.join("images", "menu.png")), "Stop")
+        menu = left_tb.addMenu(QIcon(os.path.join("images", "menu.png")), 'menu')
 
+        #ajout du  button de connexion au menu
+        new_tab_action = QAction("Connexion", self)  
+        new_tab_action.setStatusTip("Connexion")
+        #new_tab_action.triggered.connect(self.navconnexion())
+        menu.addAction(new_tab_action)
+        
+        #########################################################################
         new_tab_action = QAction(
             QIcon(os.path.join("images", "ui-tab--plus.png")), "Open New Tab", self
         )
@@ -227,8 +230,9 @@ class MainWindow(QMainWindow):
 
     def add_new_tab(self, qurl=None, label="Blank"):
 
-        browser = CustomWebEngineView()
+        browser = QWebEngineView()
         browser.setPage(CustomWebEnginePage(self))
+
 
         if qurl is None:
             qurl = QUrl("")
@@ -383,6 +387,10 @@ class MainWindow(QMainWindow):
     def back_btn_pressed(self):
         print(type(self.tabs.currentWidget()))
         self.tabs.currentWidget().back()
+    def navconnexion():
+        print("je suis ici")
+        mainWin = Ui_RegisterForm()
+        mainWin.show()
 
 
 create_db_tables()
