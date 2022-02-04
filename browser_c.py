@@ -206,26 +206,26 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status)
 
         navtb = QToolBar("Navigation")
-        navtb.setIconSize(QSize(16, 16))
+        navtb.setIconSize(QSize(20, 20))
         navtb.setStyleSheet(loader.StyleLoader.load_style())
         self.addToolBar(navtb)
 
         self.bookmarks = get_bookmarks()
-    
-        back_btn = QAction(QIcon(os.path.join("images", "icons8-left-arrow-100.png")), "Back", self)
+
+        back_btn = QAction(QIcon(os.path.join("images", "arrow-left.png")), "Back", self)
         back_btn.setStatusTip("Back to previous page")
         back_btn.triggered.connect(self.back_btn_pressed)
         navtb.addAction(back_btn)
 
         next_btn = QAction(
-            QIcon(os.path.join("images", "icons8-right-arrow-100.png")), "Forward", self
+            QIcon(os.path.join("images", "right-arrow.png")), "Forward", self
         )
         next_btn.setStatusTip("Forward to next page")
         next_btn.triggered.connect(lambda: self.tabs.currentWidget().forward())
         navtb.addAction(next_btn)
 
         reload_btn = QAction(
-            QIcon(os.path.join("images", "icons8-restart-208.png")), "Reload", self
+            QIcon(os.path.join("images", "reload.png")), "Reload", self
         )
         reload_btn.setStatusTip("Reload page")
         reload_btn.triggered.connect(lambda: self.tabs.currentWidget().reload())
@@ -248,7 +248,7 @@ class MainWindow(QMainWindow):
         
         ########################  stop button   ##################################
         stop_btn = QAction(
-            QIcon(os.path.join("images", "icons8-macos-close-96.png")), "Stop", self
+            QIcon(os.path.join("images", "cross.png")), "Stop", self
         )
         stop_btn.setStatusTip("Stop loading current page")
         stop_btn.triggered.connect(lambda: self.tabs.currentWidget().stop())
