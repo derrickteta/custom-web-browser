@@ -1,3 +1,4 @@
+from asyncio import Event
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -7,7 +8,6 @@ from PyQt5.QtPrintSupport import *
 import os
 import sys
 from PyQt5 import QtCore
-from fonctions.connexion import Ui_RegisterForm
 SavePageEvent = QWebEnginePage.SavePage
 OpenLinkInNewTabEvent = QWebEnginePage.OpenLinkInNewTab
 
@@ -15,7 +15,109 @@ from models import *
 from utils import *
 from style import loader
 
-   
+
+########classe pour afficher le page de connexion ###################
+class Ui_ConnectForm(QWidget):
+
+    def __init__(self, mainwindow):
+        super(Ui_ConnectForm, self).__init__()
+        self.setupUi()
+        self.installEventFilter(self)
+        self.mainwindow=mainwindow
+     
+    def setupUi(self):  
+        self.setFixedSize(300, 200)
+        self.setWindowTitle("connexion au compte")
+        self.Usernameedit = QLineEdit()
+        self.Passwordedit = QLineEdit()
+        self.Passwordedit.setEchoMode(QLineEdit.Password)
+
+        self.connecterButton = QPushButton()
+        self.cancelButton = QPushButton()
+        self.connecterButton.clicked.connect(self.getValues)
+        self.cancelButton.clicked.connect(lambda: self.close())
+ 
+        self.connecterButton.setText("Connecter")
+        self.cancelButton.setText("Cancel")
+        self.Usernameedit.setPlaceholderText("Username")
+        self.Passwordedit.setPlaceholderText("Password")
+         
+        vbox = QVBoxLayout()
+        hbox = QHBoxLayout()
+        vbox.addWidget(self.Usernameedit)
+        vbox.addWidget(self.Passwordedit)
+        hbox.addWidget(self.cancelButton)
+        hbox.addWidget(self.connecterButton)
+        vbox.addLayout(hbox)
+        self.setLayout(vbox)
+         
+    def getValues(self):
+        user=User.get(User.username == self.Usernameedit.text(),User.password==self.Passwordedit.text())
+        if user is not None:
+            t=self.Usernameedit.text()
+            self.mainwindow.close()
+            t=t[0:2].capitalize()
+            main=MainWindow(lt=t, con=True)
+            self.close()
+        else:
+            msg = QMessageBox.warning(None, "Error", "mom d'utilisateur ou mot de passe incorrect" )
+            return
+########classe pour afficher le page de création de compte ###################
+class Ui_RegisterForm(QWidget):
+
+    def __init__(self, mainwindow):
+        super(Ui_RegisterForm, self).__init__()
+        self.setupUi()
+        self.installEventFilter(self)
+        self.mainwindow=mainwindow
+     
+    def setupUi(self):  
+        self.setFixedSize(300, 200)
+        self.setWindowTitle("Make a new account ")
+        self.Usernameedit = QLineEdit()
+        self.Passwordedit = QLineEdit()
+        self.confirmPasswordedit = QLineEdit()
+        self.Passwordedit.setEchoMode(QLineEdit.Password)
+        self.confirmPasswordedit.setEchoMode(QLineEdit.Password)
+         
+        self.confirmButton = QPushButton()
+        self.cancelButton = QPushButton()
+        self.confirmButton.clicked.connect(self.getValues)
+        self.cancelButton.clicked.connect(lambda: self.close())
+ 
+        self.confirmButton.setText("Confirm")
+        self.cancelButton.setText("Cancel")
+        self.Usernameedit.setPlaceholderText("Username")
+        self.Passwordedit.setPlaceholderText("Password")
+        self.confirmPasswordedit.setPlaceholderText("Confirm Password")
+        self.confirmPasswordedit.returnPressed.connect(self.getValues)
+         
+        vbox = QVBoxLayout()
+        hbox = QHBoxLayout()
+        vbox.addWidget(self.Usernameedit)
+        vbox.addWidget(self.Passwordedit)
+        vbox.addWidget(self.confirmPasswordedit)
+        hbox.addWidget(self.cancelButton)
+        hbox.addWidget(self.confirmButton)
+        vbox.addLayout(hbox)
+        self.setLayout(vbox)
+         
+    def getValues(self):
+        if self.Passwordedit.text() == self.confirmPasswordedit.text():
+            #values = [self.Usernameedit.text(), self.Passwordedit.text(), self.confirmPasswordedit.text()]
+            user= User.create(username=self.Usernameedit.text(), password=self.Passwordedit.text())
+            user.save()
+            t=self.Usernameedit.text()
+            print(t)
+            self.mainwindow.close()
+            t=t[0:2].capitalize()
+            main=MainWindow(lt=t, con=True)
+            self.close()
+        else:
+            msg = QMessageBox.warning(None, "Error", "passwords not matching" )
+            return
+             
+################################################################
 class CustomWebEnginePage(QWebEnginePage):
     def __init__(self, *args, **kwargs):
         super(QWebEnginePage, self).__init__(*args, **kwargs)
@@ -80,15 +182,17 @@ class CustomWebEnginePage(QWebEnginePage):
 
 
 def create_db_tables():
-    db.create_tables([Folder, History, Bookmark, Link])
+    db.create_tables([Folder, History, Bookmark, Link, User])
     # db.drop_tables([])
+             
+################################################################
 class MainWindow(QMainWindow):
-    def __init__(self, init_url=None, *args, **kwargs):
+    def __init__(self, lt, con=False, init_url=None, *args, **kwargs):
         self.init_url = init_url
         super(MainWindow, self).__init__(*args, **kwargs)
-
+        
+        self.lt=lt
         self.setStyleSheet(loader.StyleLoader.load_style())
-
         self.tabs = QTabWidget()
         self.tabs.setDocumentMode(True)
         self.tabs.tabBarDoubleClicked.connect(self.tab_open_doubleclick)
@@ -107,7 +211,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(navtb)
 
         self.bookmarks = get_bookmarks()
-
+    
         back_btn = QAction(QIcon(os.path.join("images", "icons8-left-arrow-100.png")), "Back", self)
         back_btn.setStatusTip("Back to previous page")
         back_btn.triggered.connect(self.back_btn_pressed)
@@ -141,34 +245,49 @@ class MainWindow(QMainWindow):
         self.urlbar = QLineEdit()
         self.urlbar.returnPressed.connect(self.navigate_to_url)
         navtb.addWidget(self.urlbar)
-
+        
+        ########################  stop button   ##################################
         stop_btn = QAction(
             QIcon(os.path.join("images", "icons8-macos-close-96.png")), "Stop", self
         )
         stop_btn.setStatusTip("Stop loading current page")
         stop_btn.triggered.connect(lambda: self.tabs.currentWidget().stop())
         navtb.addAction(stop_btn)
-
+        ##################### insert user cercle when connected #################
+        if(con):
+            self.label_1 = QLabel(self.lt, self)
+            #self.label_1.resize(80,80)
+            self.label_1
+            self.label_1.setStyleSheet("background-color:white;border: 3px solid blue;border-radius: 40px;")
+            navtb.addWidget(self.label_1)   
+        #########################################################################
         left_tb = QMenuBar()
 
         left_tb.setLayoutDirection(Qt.RightToLeft)
 
         menu = left_tb.addMenu(QIcon(os.path.join("images", "menu.png")), 'menu')
-
-        #ajout du  button de connexion au menu
-        new_tab_action = QAction("Connexion", self)  
-        new_tab_action.setStatusTip("Connexion")
-        #new_tab_action.triggered.connect(self.navconnexion())
+        ########### ajouter un  button de création de compte au menu  ##################
+        
+        new_tab_action = QAction("créer un compte", self)  
+        new_tab_action.setStatusTip("créer un compte")
+        new_tab_action.triggered.connect(self.createaccount)
+        menu.addAction(new_tab_action)
+        ############### ajouter un button de connexion au menu  ##################
+        
+        new_tab_action = QAction("connexion", self)  
+        new_tab_action.setStatusTip("connexion")
+        new_tab_action.triggered.connect(self.navconnexion)
         menu.addAction(new_tab_action)
         
-        #########################################################################
+        ############### ajout du  button de open New Tab au menu ##################
+        
         new_tab_action = QAction(
             QIcon(os.path.join("images", "ui-tab--plus.png")), "Open New Tab", self
         )
         new_tab_action.setStatusTip("Open a new tab")
         new_tab_action.triggered.connect(lambda _: self.add_new_tab())
         menu.addAction(new_tab_action)
-
+        
         #########################################################################
 
         file_menu = menu.addMenu("File")
@@ -270,7 +389,7 @@ class MainWindow(QMainWindow):
     def tab_open_doubleclick(self, i):
         if i == -1:  # No tab under the click
             self.add_new_tab()
-
+        
     def current_tab_changed(self, i):
         qurl = self.tabs.currentWidget().url()
         self.update_urlbar(qurl, self.tabs.currentWidget())
@@ -387,10 +506,15 @@ class MainWindow(QMainWindow):
     def back_btn_pressed(self):
         print(type(self.tabs.currentWidget()))
         self.tabs.currentWidget().back()
-    def navconnexion():
-        print("je suis ici")
-        mainWin = Ui_RegisterForm()
+    def navconnexion(self):
+        mainWin = Ui_ConnectForm(self)
         mainWin.show()
+    def createaccount (self):
+        mainWin = Ui_RegisterForm(self)
+        mainWin.show()    
+        
+            
+       
 
 
 create_db_tables()
@@ -400,6 +524,8 @@ app.setApplicationName("eSearch")
 app.setOrganizationName("eSearch")
 app.setOrganizationDomain("eSearch")
 
-window = MainWindow()
+window = MainWindow('')
 
 app.exec_()
+
+

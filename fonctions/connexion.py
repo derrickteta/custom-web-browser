@@ -1,15 +1,23 @@
 from PyQt5.QtWidgets import (QLineEdit, QApplication, QWidget, QPushButton, 
                             QVBoxLayout, QHBoxLayout, QMessageBox)
- 
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtWebEngineWidgets import *
+from PyQt5.QtPrintSupport import *
+from browser_c import MainWindow
+
+from models import User
 class Ui_RegisterForm(QWidget):
+
     def __init__(self):
         super(Ui_RegisterForm, self).__init__()
         self.setupUi()
+        self.installEventFilter(self)
      
-    def setupUi(self):
+    def setupUi(self):  
         self.setFixedSize(300, 200)
-        self.setWindowTitle("Make a new account")
-         
+        self.setWindowTitle("Make a new account ")
         self.Usernameedit = QLineEdit()
         self.Passwordedit = QLineEdit()
         self.confirmPasswordedit = QLineEdit()
@@ -40,9 +48,14 @@ class Ui_RegisterForm(QWidget):
          
     def getValues(self):
         if self.Passwordedit.text() == self.confirmPasswordedit.text():
-            values = [self.Usernameedit.text(), self.Passwordedit.text(), self.confirmPasswordedit.text()]
-            # use the values for the next step
-            print(values) # for testing only
+            #values = [self.Usernameedit.text(), self.Passwordedit.text(), self.confirmPasswordedit.text()]
+            user= User.create(username=self.Usernameedit.text(), password=self.Passwordedit.text())
+            user.save()
+            lt=self.Usernameedit.text()
+            print(lt)
+            lt=lt[0:2].capitalize()
+            main=MainWindow()
+            main.label_1 = QLabel(lt, self)
             self.close()
         else:
             msg = QMessageBox.warning(None, "Error", "passwords not matching" )

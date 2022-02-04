@@ -14,6 +14,10 @@ class Folder(BaseModel):
     parent = ForeignKeyField("self", null=True, backref="children")
 
 
+class User(BaseModel):
+    username = CharField()
+    password = CharField()
+
 class Bookmark(Folder):
     pass
 
