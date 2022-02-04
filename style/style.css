@@ -1,19 +1,28 @@
-QAction {
-    background-color: rgb(7, 6, 6);
-}
-
 QToolBar{
-    background-color:grey;
+    background-color:rgb(61, 58, 58);
+    spacing: 5px;         
+    min-height: 30px;
 }
 
 QLineEdit {
-    /* border-radius: 50%; */
+    border-radius: 8px;
+    padding: 0 8px; 
 }
 
-QIcon , QAction {
-    background-color: white;
+QIcon::hover{
+    background-color: rgba(61, 58, 58, 0.226);
+}
+
+QAction::hover{
+    background-color: rgba(61, 58, 58, 0.226);
+    /*qproperty-iconSize: 24px;*/
 }
 
 QMainWindow{
-    background-color: grey;
+    background-color: #f8f8ff;
 }
+
+QMenuBar{
+    background-color: rgba(61, 58, 58, 0.226);
+}
+
